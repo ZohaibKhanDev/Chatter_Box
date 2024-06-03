@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "117097506902",
+    "project_id": "datastore-27ea3",
+    "storage_bucket": "datastore-27ea3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:117097506902:android:b644635c75b3c19959b3f7",
+        "android_client_info": {
+          "package_name": "com.example.signup"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0wJKwH37xAXgJZFqG7Lu5lalakyxcZug"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
