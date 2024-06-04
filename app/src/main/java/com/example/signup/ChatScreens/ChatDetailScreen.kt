@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,11 +54,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +68,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.app.cmrxtutorial.composables.CameraPreviewScreen
 import com.example.signup.MainActivity
 import com.example.signup.dataclasses.Message
@@ -76,11 +81,21 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
+import io.getstream.chat.android.compose.ui.components.OnlineIndicator
+import io.kamel.core.Resource
+import io.kamel.core.utils.File
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.Dispatcher
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration.Companion.seconds
 
 private const val PREFS_NAME = "prefs"
 private const val PREF_UPLOADED_IMAGE_URL = "uploaded_image_url"
@@ -120,6 +135,7 @@ fun ChatDetailScreen(
         mutableStateOf(false)
     }
 
+    val scope = rememberCoroutineScope()
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -129,17 +145,20 @@ fun ChatDetailScreen(
                 isUploading = true
                 uploadImageToFirebase(context, uri) { downloadUrl ->
                     isLoading = false
-                    val newChat = Chats(
-                        message = chate,
-                        currentTimeOrDate = LocalDateTime.now()
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                        receiverId = receiverId ?: "",
-                        senderId = senderId,
-                        photoUri = downloadUrl
-                    )
-                    viewModel.addMessage(newChat)
-                    chate = ""
-                    isUploading = false
+                    scope.launch {
+                        val newChat = Chats(
+                            message = chate,
+                            currentTimeOrDate = LocalDateTime.now()
+                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                            receiverId = receiverId ?: "",
+                            senderId = senderId,
+                            photoUri = downloadUrl
+                        )
+                        viewModel.addMessage(newChat)
+                        chate = ""
+                        delay(1000)
+                        isUploading = false
+                    }
                 }
             }
         }
@@ -204,7 +223,7 @@ fun ChatDetailScreen(
                         chate = it
                     },
                     modifier = Modifier
-                        .wrapContentWidth()
+                        .width(300.dp)
                         .height(52.dp),
                     shape = RoundedCornerShape(25.dp),
                     placeholder = {
@@ -258,19 +277,28 @@ fun ChatDetailScreen(
                         }
                     }, singleLine = true
                 )
-                Box(
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .clickable {
-                            launcher.launch("image/*")
-                        }
-                        .size(45.dp)
-                        .background(Color.White.copy(alpha = 0.50f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(imageVector = Icons.Default.Photo, contentDescription = "")
+                if (isUploading) {
+                    Box(
+                        modifier = Modifier
+                            .size(45.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable {
+                                launcher.launch("image/*")
+                            }
+                            .size(45.dp)
+                            .background(Color.White.copy(alpha = 0.50f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(imageVector = Icons.Default.Photo, contentDescription = "")
+                    }
                 }
-
             }
         }
     }) {
@@ -309,57 +337,54 @@ fun ChatDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = if (chat.senderId == senderId) Alignment.CenterEnd else Alignment.CenterStart
                 ) {
-                    Card(
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .widthIn(min = 100.dp, max = 150.dp)
-                            .wrapContentHeight(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (chat.senderId == senderId) Color(0XFF7A8194) else Color(
-                                0XFF373E4E
-                            )
-                        ),
-                        elevation = CardDefaults.cardElevation(2.dp),
-                        shape = RoundedCornerShape(20.dp)
+                    Column(
+                        horizontalAlignment = if (chat.senderId == senderId) Alignment.End else Alignment.Start
                     ) {
-                        Box {
-                            if (isUploading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier
-                                        .size(62.dp)
-                                        .align(Alignment.Center),
-                                    color = Color.White,
-                                    trackColor = Color.Red
+                        Card(
+                            modifier = Modifier
+                                .padding(10.dp)
+                                .widthIn(min = 100.dp, max = 150.dp)
+                                .wrapContentHeight(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (chat.senderId == senderId) Color(0XFF7A8194) else Color(
+                                    0XFF373E4E
                                 )
-                            } else {
+                            ),
+                            elevation = CardDefaults.cardElevation(2.dp),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(8.dp)
+                            ) {
                                 if (chat.photoUri != null) {
-                                    AsyncImage(
-                                        model = chat.photoUri,
-                                        contentDescription = "",
-                                        modifier = Modifier.fillMaxSize()
-                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(Color.Gray)
+                                    ) {
+                                        SubcomposeAsyncImage(
+                                            model = chat.photoUri,
+                                            contentDescription = "",
+                                            modifier = Modifier.fillMaxSize(),
+                                            contentScale = ContentScale.Crop,
+                                        )
+                                    }
                                 }
+
+                                Text(
+                                    text = chat.message,
+                                    color = if (chat.senderId == senderId) Color.White else Color.Gray,
+                                    modifier = Modifier.padding(4.dp)
+                                )
                             }
                         }
                         Text(
-                            text = chat.message,
-                            color = if (chat.senderId == senderId) Color.White else Color.Gray,
+                            text = messageDateTime.format(DateTimeFormatter.ofPattern("hh:mm a")),
+                            color = Color.White,
+                            fontSize = 10.sp,
                             modifier = Modifier
-                                .padding(8.dp)
+                                .padding(5.dp)
                         )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Text(
-                                text = messageDateTime.format(DateTimeFormatter.ofPattern("hh:mm a")),
-                                color = Color.White,
-                                fontSize = 10.sp,
-                                modifier = Modifier
-                                    .padding(5.dp)
-                            )
-                        }
                     }
                 }
             }

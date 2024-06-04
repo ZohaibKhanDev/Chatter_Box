@@ -100,7 +100,6 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-pager:0.25.1")
     implementation ("com.google.accompanist:accompanist-pager-indicators:0.25.1")
     implementation ("com.google.accompanist:accompanist-swiperefresh:0.18.0")
-    implementation("media.kamel:kamel-image:0.9.5")
     // Camerax implementation
     val cameraxVersion = "1.3.0"
     implementation ("androidx.camera:camera-core:${cameraxVersion}")
@@ -116,6 +115,10 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    implementation("media.kamel:kamel-image:0.9.5")
+    implementation("io.ktor:ktor-client-core:2.0.0")
+    implementation("io.ktor:ktor-client-okhttp:2.0.0")
+
 
 
 }
