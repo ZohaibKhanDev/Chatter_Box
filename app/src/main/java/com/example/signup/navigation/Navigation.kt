@@ -16,6 +16,7 @@ import com.example.signup.ChatScreens.ChatScreen
 import com.example.signup.loginscreens.HomeScreen
 import com.example.signup.loginscreens.LoginScreen
 import com.example.signup.loginscreens.SignUp
+import com.example.signup.picDetail.PictureDetail
 import com.example.signup.profile.ProfileDetail
 import com.example.signup.profile.ProfileScreen
 import com.example.signup.status.StatusDetail
@@ -51,6 +52,18 @@ fun Navigation() {
         composable(Screens.Profile.route) {
             ProfileScreen(navController = navController)
         }
+
+
+        composable(
+            Screens.PicTureDetail.route + "/{pic}", // Make sure route name is correct
+            arguments = listOf(
+                navArgument("pic") { type = NavType.StringType }
+            )
+        ) {
+            val pic = it.arguments?.getString("pic")
+            PictureDetail(navController, pic)
+        }
+
         composable(
             route = Screens.ChatDetail.route + "/{name}/{receiverId}/{image}",
             arguments = listOf(
@@ -80,6 +93,8 @@ fun Navigation() {
             }
         }
 
+
+
     }
 }
 
@@ -92,4 +107,5 @@ sealed class Screens(val route: String) {
     object ProfileDetail : Screens("ProfileDetail")
     object ChatDetail : Screens("ChatDetail")
     object StatusDetail : Screens("StatusDetail")
+    object PicTureDetail : Screens("PicDetail")
 }

@@ -1,10 +1,8 @@
 package com.example.signup.ChatScreens
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,13 +26,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -43,7 +41,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
@@ -60,7 +57,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -69,33 +65,19 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
-import coil.compose.rememberAsyncImagePainter
-import com.app.cmrxtutorial.composables.CameraPreviewScreen
 import com.example.signup.MainActivity
-import com.example.signup.dataclasses.Message
-import com.example.signup.loginscreens.getImageUrlFromPrefs
-import com.example.signup.loginscreens.saveImageUrlToPrefs
+import com.example.signup.navigation.Screens
 import com.example.signup.realtimedatabase.MainViewModel1
 import com.example.signup.realtimedatabase.Repository1
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
-import io.getstream.chat.android.compose.ui.components.OnlineIndicator
-import io.kamel.core.Resource
-import io.kamel.core.utils.File
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.Dispatcher
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.time.Duration.Companion.seconds
 
 private const val PREFS_NAME = "prefs"
 private const val PREF_UPLOADED_IMAGE_URL = "uploaded_image_url"
@@ -107,7 +89,7 @@ fun ChatDetailScreen(
     navController: NavController,
     name: String?,
     receiverId: String?,
-    image: String?
+    image: String?,
 ) {
     var chate by remember { mutableStateOf("") }
     val user = Firebase.auth.currentUser
@@ -115,11 +97,19 @@ fun ChatDetailScreen(
     val senderId = user?.uid ?: return
     val databaseReference = Firebase.database.reference.child("Messages")
     val repository = Repository1(databaseReference)
-    val viewModel = MainViewModel1(repository)
+
+    val viewModel = remember { MainViewModel1(repository) }
+
     val activity = context as MainActivity
 
-    LaunchedEffect(Unit) {
-        viewModel.loadMessages(senderId, receiverId!!)
+    LaunchedEffect(key1 = receiverId) {
+        if (receiverId != null) {
+            viewModel.loadMessages(senderId, receiverId)
+        }
+    }
+
+    var alert by remember {
+        mutableStateOf(false)
     }
 
     val messages by viewModel.messages.collectAsState()
@@ -170,18 +160,23 @@ fun ChatDetailScreen(
                 text = "$name",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White, modifier = Modifier.padding(start = 8.dp)
+                color = Color.White, modifier = Modifier
+                    .padding(start = 8.dp)
+                    .clickable { }
             )
         }, navigationIcon = {
             Row(
-                modifier = Modifier.wrapContentWidth(),
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .clickable { navController.navigateUp() },
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     imageVector = Icons.Default.ArrowBackIosNew,
                     contentDescription = "",
-                    modifier = Modifier.clickable { },
+                    modifier = Modifier.clickable {
+                    },
                     tint = Color.White
                 )
                 Box(
@@ -332,59 +327,125 @@ fun ChatDetailScreen(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
-
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = if (chat.senderId == senderId) Alignment.CenterEnd else Alignment.CenterStart
-                ) {
-                    Column(
-                        horizontalAlignment = if (chat.senderId == senderId) Alignment.End else Alignment.Start
+                if (chat.senderId == senderId) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.CenterEnd
                     ) {
-                        Card(
-                            modifier = Modifier
-                                .padding(10.dp)
-                                .widthIn(min = 100.dp, max = 150.dp)
-                                .wrapContentHeight(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (chat.senderId == senderId) Color(0XFF7A8194) else Color(
-                                    0XFF373E4E
-                                )
-                            ),
-                            elevation = CardDefaults.cardElevation(2.dp),
-                            shape = RoundedCornerShape(10.dp)
+                        Column(
+                            horizontalAlignment = Alignment.End
                         ) {
-                            Column(
-                                modifier = Modifier.padding(8.dp)
+                            Card(
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .widthIn(min = 100.dp, max = 150.dp)
+                                    .wrapContentHeight(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0XFF7A8194)
+                                ),
+                                elevation = CardDefaults.cardElevation(2.dp),
+                                shape = RoundedCornerShape(10.dp)
                             ) {
-                                if (chat.photoUri != null) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .background(Color.Gray)
-                                    ) {
-                                        SubcomposeAsyncImage(
-                                            model = chat.photoUri,
-                                            contentDescription = "",
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentScale = ContentScale.Crop,
-                                        )
-                                    }
-                                }
+                                Column(
+                                    modifier = Modifier.padding(8.dp)
+                                ) {
+                                    if (chat.photoUri != null) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(Color.Gray)
+                                                .clickable {
+                                                    navController.navigate(Screens.PicTureDetail.route + "/${Uri.encode(chat.photoUri)}")
 
-                                Text(
-                                    text = chat.message,
-                                    color = if (chat.senderId == senderId) Color.White else Color.Gray,
-                                    modifier = Modifier.padding(4.dp)
-                                )
+                                                }
+                                        ) {
+                                            SubcomposeAsyncImage(
+                                                model = chat.photoUri,
+                                                contentDescription = "",
+                                                modifier = Modifier
+                                                    .fillMaxWidth(),
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        text = chat.message,
+                                        color = Color.White,
+                                        modifier = Modifier
+                                            .padding(4.dp)
+                                    )
+                                }
                             }
+
+                            Text(
+                                text = messageDateTime.format(DateTimeFormatter.ofPattern("hh:mm a")),
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                modifier = Modifier
+                                    .padding(5.dp)
+                            )
                         }
-                        Text(
-                            text = messageDateTime.format(DateTimeFormatter.ofPattern("hh:mm a")),
-                            color = Color.White,
-                            fontSize = 10.sp,
-                            modifier = Modifier
-                                .padding(5.dp)
-                        )
+                    }
+                } else {
+
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            Card(
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .widthIn(min = 100.dp, max = 150.dp)
+                                    .wrapContentHeight(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0XFF373E4E)
+                                ),
+                                elevation = CardDefaults.cardElevation(2.dp),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(8.dp)
+                                ) {
+                                    if (chat.photoUri != null) {
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .background(Color.Gray)
+                                                .clickable {
+                                                    Screens.PicTureDetail.route + "/${
+                                                        Uri.encode(chat.photoUri)
+                                                    }"
+
+                                                }
+                                        ) {
+                                            SubcomposeAsyncImage(
+                                                model = chat.photoUri,
+                                                contentDescription = "",
+                                                modifier = Modifier
+                                                    .fillMaxSize(),
+                                                contentScale = ContentScale.Crop,
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        text = chat.message,
+                                        color = Color.Gray,
+                                        modifier = Modifier
+                                            .padding(4.dp)
+                                    )
+                                }
+                            }
+
+                            Text(
+                                text = messageDateTime.format(DateTimeFormatter.ofPattern("hh:mm a")),
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                modifier = Modifier
+                                    .padding(5.dp)
+                            )
+                        }
                     }
                 }
             }
