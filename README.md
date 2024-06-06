@@ -3,12 +3,12 @@
 
 
 ## 🚀 Key Features
-- ** Instant Messaging **
-- ** Voice Calls **
-- ** Video Chats **
-- ** File Sharing **
-- ** **
-- ** **
+- **Instant Messaging**
+- **Voice Calls**
+- **Video Chats**
+- **File Sharing**
+- **Group Chats**
+- **End-to-End Encryption**
 - ** **
 - ** **
 - ** **
