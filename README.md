@@ -10,7 +10,7 @@
 - **Group Chats**
 - **End-to-End Encryption**
 - **Message Reactions**
-- ** **
+- **Status Updates**
 - ** **
 - ** **
 
