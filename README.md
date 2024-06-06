@@ -11,7 +11,7 @@
 - **End-to-End Encryption**
 - **Message Reactions**
 - **Status Updates**
-- ** **
+- **Custom Emojis**
 - ** **
 
 
