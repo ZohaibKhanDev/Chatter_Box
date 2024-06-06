@@ -118,6 +118,7 @@ dependencies {
     implementation("media.kamel:kamel-image:0.9.5")
     implementation("io.ktor:ktor-client-core:2.0.0")
     implementation("io.ktor:ktor-client-okhttp:2.0.0")
+    implementation("com.google.android.exoplayer:exoplayer:2.18.7")
 
 
 
