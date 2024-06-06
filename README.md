@@ -9,7 +9,7 @@
 - **File Sharing**
 - **Group Chats**
 - **End-to-End Encryption**
-- ** **
+- **Message Reactions**
 - ** **
 - ** **
 - ** **
