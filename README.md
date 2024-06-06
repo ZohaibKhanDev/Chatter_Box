@@ -12,7 +12,7 @@
 - **Message Reactions**
 - **Status Updates**
 - **Custom Emojis**
-- ** **
+- **Push Notifications**
 
 
 ## 🤝 Connect with Me
