@@ -3,9 +3,9 @@
 
 
 ## 🚀 Key Features
-- ** **
-- ** **
-- ** **
+- ** Instant Messaging **
+- ** Voice Calls **
+- ** Video Chats **
 - ** **
 - ** **
 - ** **
