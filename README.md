@@ -11,7 +11,7 @@
 - **Message Reactions**
 - **Status Updates**
 - **Custom Emojis**
-- **Push Notifications**
+- **Push Notifications** 
 
 
 ## 🤝 Connect with Me
