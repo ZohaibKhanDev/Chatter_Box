@@ -10,7 +10,7 @@
 - **End-to-End Encryption**
 - **Message Reactions**
 - **Status Updates**
-- **Custom Emojis** 
+- **Custom Emojis**
 - **Push Notifications** 
  
 ## 🤝 Connect with Me
