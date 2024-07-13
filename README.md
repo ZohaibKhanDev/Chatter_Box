@@ -1,7 +1,7 @@
 # Chatter Box App
 ## Overview
 
-## 🚀 Key Features
+## 🚀 Key Features 
 - **Instant Messaging**
 - **Voice Calls**
 - **Video Chats**
