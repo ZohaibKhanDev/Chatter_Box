@@ -4,7 +4,7 @@
 ## 🚀 Key Features
 - **Instant Messaging**
 - **Voice Calls**
-- **Video Chats**
+- **Video Chats** 
 - **File Sharing**
 - **Group Chats**
 - **End-to-End Encryption**
