@@ -19,7 +19,6 @@ Let's chat about potential projects, job opportunities, or any other collaborati
 [![LinkedIn](https://www.linkedin.com/in/khubaibkhandev](https://www.linkedin.com/in/muhammad-zohaib-imtiaz-dev/))
 [![Email](https://img.shields.io/badge/Email-Drop%20a%20Message-red?style=for-the-badge&logo=gmail)](mailto:mzkhan9610@gmail.com)
 
-
 ## Screen Shots
 
 | ![Screenshot 1](https://github.com/ZohaibKhanDev/Chatter_Box/blob/master/assits/1.png) | ![Screenshot 2](https://github.com/ZohaibKhanDev/Chatter_Box/blob/master/assits/2.png) | ![Screenshot 3](https://github.com/ZohaibKhanDev/Chatter_Box/blob/master/assits/3.png) |
