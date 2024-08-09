@@ -94,11 +94,7 @@ fun SignUp(navController: NavController) {
     var dialog by remember { mutableStateOf(false) }
     var eye by remember { mutableStateOf(false) }
 
-    if (dialog) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-    }
+
 
 
     LaunchedEffect(key1 = Unit) {
@@ -292,83 +288,91 @@ fun SignUp(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(11.dp))
 
-        TextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text(text = "PASSWORD") },
-            shape = RoundedCornerShape(14.dp),
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color(0XFFEBF3FF),
-                unfocusedIndicatorColor = Color(0XFFEBF3FF),
-                focusedContainerColor = Color(0XFFEBF3FF),
-                unfocusedContainerColor = Color(0XFFEBF3FF)
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 20.dp, end = 20.dp),
-            trailingIcon = {
-                if (password.isNotEmpty()) {
-                    Icon(
-                        imageVector = if (eye) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                        contentDescription = "",
-                        modifier = Modifier.clickable { eye = !eye }
-                    )
-                }
-            },
-            visualTransformation = if (eye) VisualTransformation.None else PasswordVisualTransformation()
-        )
+        if (dialog) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }else{
 
-        Spacer(modifier = Modifier.height(16.dp))
+            TextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text(text = "PASSWORD") },
+                shape = RoundedCornerShape(14.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = Color(0XFFEBF3FF),
+                    unfocusedIndicatorColor = Color(0XFFEBF3FF),
+                    focusedContainerColor = Color(0XFFEBF3FF),
+                    unfocusedContainerColor = Color(0XFFEBF3FF)
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, end = 20.dp),
+                trailingIcon = {
+                    if (password.isNotEmpty()) {
+                        Icon(
+                            imageVector = if (eye) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = "",
+                            modifier = Modifier.clickable { eye = !eye }
+                        )
+                    }
+                },
+                visualTransformation = if (eye) VisualTransformation.None else PasswordVisualTransformation()
+            )
 
-        Button(
-            onClick = {
-                scope.launch(Dispatchers.Main) {
-                    viewModel.signUp(User(email, password)).collect {
-                        when (it) {
-                            is ResultState.Error -> {
-                                dialog = false
-                                Toast.makeText(context, "${it.error}", Toast.LENGTH_SHORT).show()
-                            }
+            Spacer(modifier = Modifier.height(16.dp))
 
-                            ResultState.Loading -> {
-                                dialog = true
-                             }
+            Button(
+                onClick = {
+                    scope.launch(Dispatchers.Main) {
+                        viewModel.signUp(User(email, password)).collect {
+                            when (it) {
+                                is ResultState.Error -> {
+                                    dialog = false
+                                    Toast.makeText(context, "${it.error}", Toast.LENGTH_SHORT).show()
+                                }
 
-                            is ResultState.Success -> {
-                                dialog = false
-                                Toast.makeText(context, it.response, Toast.LENGTH_SHORT).show()
-                                navController.navigate(Screens.Login.route)
+                                ResultState.Loading -> {
+                                    dialog = true
+                                }
 
-                                val userId = Firebase.auth.currentUser?.uid
-                                if (userId != null) {
-                                    val userProfile = Message(
-                                        userName,
-                                        email,
-                                        password,
-                                        userId,
-                                        uploadedImageUrl ?: "",
-                                        "" ?: ""
-                                    )
-                                    myRef.child(userId).setValue(userProfile)
-                                } else {
-                                    Toast.makeText(context, "User ID is null", Toast.LENGTH_SHORT)
-                                        .show()
+                                is ResultState.Success -> {
+                                    dialog = false
+                                    Toast.makeText(context, it.response, Toast.LENGTH_SHORT).show()
+                                    navController.navigate(Screens.Login.route)
+
+                                    val userId = Firebase.auth.currentUser?.uid
+                                    if (userId != null) {
+                                        val userProfile = Message(
+                                            userName,
+                                            email,
+                                            password,
+                                            userId,
+                                            uploadedImageUrl ?: "",
+                                            "" ?: ""
+                                        )
+                                        myRef.child(userId).setValue(userProfile)
+                                    } else {
+                                        Toast.makeText(context, "User ID is null", Toast.LENGTH_SHORT)
+                                            .show()
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            },
-            modifier = Modifier
-                .width(200.dp)
-                .height(50.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0XFF1FB7E8),
-                contentColor = Color.White
-            )
-        ) {
-            Text(text = "SignUp")
+                },
+                modifier = Modifier
+                    .width(200.dp)
+                    .height(50.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0XFF1FB7E8),
+                    contentColor = Color.White
+                )
+            ) {
+                Text(text = "SignUp")
+            }
+
         }
     }
 }

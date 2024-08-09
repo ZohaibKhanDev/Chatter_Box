@@ -82,11 +82,7 @@ fun LoginScreen(navController: NavController) {
         mutableStateOf(false)
     }
 
-    if (isLogin) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-    }
+
 
     Column(
         modifier = Modifier
@@ -146,48 +142,54 @@ fun LoginScreen(navController: NavController) {
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+        if (isLogin) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }else{
 
-        Button(
-            onClick = {
-                scope.launch(Dispatchers.Main) {
-                    viewModel.login(
-                        User(
-                            email, password
-                        )
-                    ).collect {
-                        when (it) {
-                            is ResultState.Error -> {
-                                isLogin = false
-                                Toast.makeText(context, "${it.error}", Toast.LENGTH_SHORT).show()
+            Button(
+                onClick = {
+                    scope.launch(Dispatchers.Main) {
+                        viewModel.login(
+                            User(
+                                email, password
+                            )
+                        ).collect {
+                            when (it) {
+                                is ResultState.Error -> {
+                                    isLogin = false
+                                    Toast.makeText(context, "${it.error}", Toast.LENGTH_SHORT).show()
+                                }
+
+                                ResultState.Loading -> {
+                                    isLogin = true
+                                }
+
+                                is ResultState.Success -> {
+                                    isLogin = false
+                                    Toast.makeText(context, it.response, Toast.LENGTH_SHORT).show()
+                                    navController.navigate(Screens.Chat.route)
+                                    val sharedPreferences = context.getSharedPreferences("SignUp", Context.MODE_PRIVATE)
+                                    sharedPreferences.edit().putString("userId", userId).apply()
+                                }
+
+                                else -> {}
                             }
-
-                            ResultState.Loading -> {
-                                isLogin = true
-                            }
-
-                            is ResultState.Success -> {
-                                isLogin = false
-                                Toast.makeText(context, it.response, Toast.LENGTH_SHORT).show()
-                                navController.navigate(Screens.Chat.route)
-                                val sharedPreferences = context.getSharedPreferences("SignUp", Context.MODE_PRIVATE)
-                                sharedPreferences.edit().putString("userId", userId).apply()
-                            }
-
-                            else -> {}
                         }
                     }
-                }
-            },
-            modifier = Modifier
-                .width(300.dp)
-                .height(45.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0XFF2148C0),
-                contentColor = Color.White
-            )
-        ) {
-            Text(text = "Login")
+                },
+                modifier = Modifier
+                    .width(300.dp)
+                    .height(45.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0XFF2148C0),
+                    contentColor = Color.White
+                )
+            ) {
+                Text(text = "Login")
+            }
         }
     }
 }
