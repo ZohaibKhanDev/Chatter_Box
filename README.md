@@ -9,7 +9,7 @@
 - **Group Chats**
 - **End-to-End Encryption**
 - **Message Reactions**
-- **Status Updates**
+- **Status Updates** 
 - **Custom Emojis**
 - **Push Notifications** 
   
